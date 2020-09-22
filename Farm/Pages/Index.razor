@@ -1,0 +1,21 @@
+﻿@page "/"
+@using Farm.Data
+
+<h1>
+    <i class="oi oi-home" aria-hidden="true"></i>
+    Old McKhalid's Farm Animals
+</h1>
+
+<div class="container-fluid">
+    <div class="row equal">
+        @foreach (var animal in Animals.All)
+            {
+                <Animal
+                    Name="@animal.Name"
+                    ImageUrl="@animal.ImageUrl"
+                    WavUrl="@animal.WavUrl">
+                    @animal.Description
+                </Animal>
+            }
+        </div>
+</div>

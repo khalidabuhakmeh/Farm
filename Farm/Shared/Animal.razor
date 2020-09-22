@@ -1,0 +1,87 @@
+@inject IJSRuntime Js
+@implements IDisposable
+
+<div class="col-3 d-flex pb-3">
+    <div class="card" style="width: 18rem;">
+        <img class="card-img-top" src="@ImageUrl" alt="Card image cap">
+        <div class="card-body">
+            <h5 class="card-title">@Name</h5>
+            <p class="card-text">
+                @ChildContent
+            </p>
+            @if (IsPlaying)
+            {
+                <a class="btn btn-primary btn-block" @onclick="StopAudio">
+                    <i class="oi oi-media-stop" aria-hidden="true"></i>
+                    Stop Sound
+                </a>
+            }
+            else
+            {
+                <a class="btn btn-primary btn-block" @onclick="PlayAudio">
+                    <i class="oi oi-media-play" aria-hidden="true"></i>
+                    Play Sound
+                </a>
+            }
+            <audio @ref="Audio">
+                <source src="@WavUrl" type="audio/wav">
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    bool IsPlaying { get; set; }
+    
+    [Parameter]
+    public string Name { get; set; }
+
+    [Parameter]
+    public string ImageUrl { get; set; }
+
+    [Parameter]
+    public string WavUrl { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    private DotNetObjectReference<Animal> animal;
+    private ElementReference Audio { get; set; }
+
+    private async Task PlayAudio()
+    {
+        await Js.InvokeVoidAsync("playAudio", Audio);
+        IsPlaying = true;
+    }
+
+    private async Task StopAudio()
+    {
+        await Js.InvokeVoidAsync("stopAudio", Audio);
+        IsPlaying = false;
+    }
+
+    [JSInvokable]
+    public async Task OnEnd()
+    {
+        IsPlaying = false;
+        StateHasChanged();
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            animal = DotNetObjectReference.Create(this);
+            await Js.InvokeVoidAsync("initAudio", Audio, animal);
+        }
+        
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    public void Dispose()
+    {
+        animal?.Dispose();
+    }
+}
